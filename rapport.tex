@@ -1,0 +1,338 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{placeins}
+\geometry{margin=1in}
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{listings}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\title{\textbf{Rapport de Projet de Programmation Avancée}}
+\author{\textbf{Sara HADOUANI - Mariam SYLLA}}
+\date{}
+
+
+\begin{document}
+
+\maketitle
+\begin{center}
+\textbf{Equation de la chaleur}
+\end{center}
+
+\vspace{1cm}
+\begin{center}
+\textbf{---Encadré par Vincent TORRI---}
+\end{center}
+
+\vspace{1cm}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{ensiie_logo_fx_RVB_0.png}
+\end{figure}
+
+\vspace{9cm}
+\begin{flushleft}
+Filière : formation initiale ENSIIE, 2ème année \hfill Année scolaire 2025/2026
+\end{flushleft}
+
+\newpage
+\tableofcontents
+
+\newpage
+\section{Introduction}
+
+La modélisation et la simulation numérique des phénomènes de diffusion thermique occupent une place centrale en physique et en ingénierie, en particulier dans l’étude des transferts de chaleur au sein des matériaux. L’équation de la chaleur constitue un modèle fondamental permettant de décrire l’évolution temporelle de la température en fonction des propriétés thermiques du milieu ainsi que des sources d’énergie éventuelles.
+
+L’objectif de ce projet est de résoudre numériquement l’équation de la chaleur en une et deux dimensions, puis d’analyser et de visualiser l’évolution de la température dans différents matériaux aux caractéristiques thermiques différentes. Deux configurations géométriques sont étudiées : une barre unidimensionnelle (1D) et une plaque bidimensionnelle (2D). Ces deux cas permettent de mettre en évidence l’influence de la géométrie et des propriétés physiques du matériau sur les mécanismes de diffusion thermique.
+
+Plusieurs matériaux couramment utilisés en ingénierie sont considérés, notamment le cuivre, le fer, le verre et le polystyrène. Leurs différences de conductivité thermique, de masse volumique et de chaleur massique conduisent à des comportements thermiques sensiblement différents, qui sont analysés à partir des résultats numériques obtenus.
+
+La résolution de l’équation de la chaleur repose sur une discrétisation de l’espace par différences finies et sur l’utilisation de schémas numériques implicites pour l’intégration en temps. Ce choix méthodologique permet de garantir la stabilité du calcul, même pour des pas de temps relativement grands, au prix de la résolution de systèmes linéaires à chaque itération temporelle. Une attention particulière est également portée à la structure logicielle du programme, afin de séparer clairement les aspects liés à la modélisation physique, au calcul numérique et à la visualisation graphique.
+
+Enfin, les résultats des simulations sont visualisés à l’aide de la bibliothèque SDL, ce qui permet d’observer qualitativement la diffusion de la chaleur et de comparer les comportements thermiques des différents matériaux étudiés. L’analyse de ces résultats met en évidence la cohérence entre le modèle physique, les méthodes numériques employées et les phénomènes thermiques attendus.
+
+\section{Modélisation physique}
+
+\subsection{Équation de la chaleur}
+
+La diffusion de la chaleur au sein d’un matériau est décrite par l’équation de la chaleur, issue des principes de conservation de l’énergie. Dans le cas général, cette équation s’écrit :
+\begin{equation}
+\rho c \, \frac{\partial u}{\partial t}
+= \lambda \, \Delta u + F,
+\end{equation}
+où :
+\begin{itemize}
+    \item $u(\mathbf{x},t)$ désigne la température au point $\mathbf{x}$ et à l’instant $t$,
+    \item $\lambda$ est la conductivité thermique du matériau,
+    \item $\rho$ est la masse volumique,
+    \item $c$ est la capacité thermique massique,
+    \item $F$ représente un terme source volumique de chaleur.
+\end{itemize}
+
+Le terme $\rho c \, \partial u / \partial t$ traduit l’inertie thermique du matériau, tandis que le terme diffusif $\lambda \Delta u$ modélise les transferts de chaleur par conduction. La présence d’un terme source permet de représenter un apport énergétique localisé ou réparti dans le domaine étudié.
+
+\subsection{Rôle des paramètres thermiques}
+
+Les propriétés thermiques du matériau jouent un rôle déterminant dans la dynamique de diffusion de la chaleur. En particulier, le rapport
+\begin{equation}
+\alpha = \frac{\lambda}{\rho c}
+\end{equation}
+correspond à la diffusivité thermique du matériau. Ce coefficient caractérise la vitesse à laquelle une perturbation thermique se propage dans le milieu.
+
+Les matériaux à forte diffusivité thermique, tels que le cuivre, présentent une propagation rapide de la chaleur et une homogénéisation rapide de la température. À l’inverse, les matériaux isolants, comme le polystyrène, possèdent une diffusivité faible, ce qui se traduit par une évolution plus lente.
+
+\subsection{Cas étudiés : barre 1D et plaque 2D}
+
+Deux configurations géométriques sont considérées dans ce projet :
+\begin{itemize}
+    \item une barre unidimensionnelle, pour laquelle la température dépend d’une seule variable spatiale ;
+    \item une plaque bidimensionnelle, pour laquelle la température dépend de deux variables spatiales.
+\end{itemize}
+
+Dans le cas unidimensionnel, l’équation de la chaleur se réduit à :
+\begin{equation}
+\rho c \, \frac{\partial u}{\partial t}
+= \lambda \, \frac{\partial^2 u}{\partial x^2} + F(x,t),
+\end{equation}
+tandis que dans le cas bidimensionnel, le terme diffusif fait intervenir le laplacien à deux dimensions :
+\begin{equation}
+\rho c \, \frac{\partial u}{\partial t}
+= \lambda \left(
+\frac{\partial^2 u}{\partial x^2}
++
+\frac{\partial^2 u}{\partial y^2}
+\right) + F(x,y,t).
+\end{equation}
+
+Ces deux configurations permettent d’étudier l’influence de la dimension spatiale sur la diffusion thermique, ainsi que la formation de structures spatiales telles que des zones chaudes localisées dans le cas bidimensionnel.
+
+\subsection{Conditions initiales et conditions aux limites}
+
+Les simulations sont réalisées à partir d’une condition initiale correspondant à une température uniforme dans l’ensemble du domaine. Ce choix permet d’observer clairement l’effet des sources de chaleur et des propriétés thermiques du matériau sur l’évolution du champ de température.
+
+Des conditions aux limites de type Dirichlet sont imposées sur le domaine, ce qui revient à fixer la température aux bords. Ce cadre simplifié permet de se concentrer sur les mécanismes de diffusion thermique sans introduire de complexité supplémentaire liée aux échanges avec l’environnement extérieur.
+
+\section{Méthodes numériques}
+
+La résolution analytique de l’équation de la chaleur n’est possible que dans des cas simples. Pour des géométries générales et en présence de sources de chaleur, il est nécessaire de recourir à des méthodes numériques. Dans ce projet, l’équation de la chaleur est résolue par une discrétisation par différences finies de l’espace et par des schémas implicites pour l’intégration en temps.
+
+\subsection{Discrétisation spatiale}
+
+Le domaine spatial est discrétisé à l’aide d’un maillage uniforme. Dans le cas unidimensionnel, l’intervalle de longueur $L$ est découpé en $N$ points régulièrement espacés, avec un pas de maille $\Delta x = L/(N-1)$. La dérivée seconde spatiale est alors approchée par une formule de différences finies centrées :
+\begin{equation}
+\frac{\partial^2 u}{\partial x^2}(x_i,t)
+\approx
+\frac{u_{i+1}(t) - 2u_i(t) + u_{i-1}(t)}{\Delta x^2}.
+\end{equation}
+
+Dans le cas bidimensionnel, le domaine est discrétisé par une grille cartésienne uniforme de pas $\Delta x$ et $\Delta y$. Le laplacien est approché par :
+\begin{equation}
+\Delta u(x_i,y_j,t)
+\approx
+\frac{u_{i+1,j} - 2u_{i,j} + u_{i-1,j}}{\Delta x^2}
++
+\frac{u_{i,j+1} - 2u_{i,j} + u_{i,j-1}}{\Delta y^2}.
+\end{equation}
+
+Ces approximations sont d’ordre deux en espace, ce qui assure une bonne précision spatiale pour un coût de calcul modéré.
+
+\subsection{Discrétisation temporelle et schéma implicite}
+
+L’intégration en temps est réalisée à l’aide d’un schéma implicite d’Euler. Pour un pas de temps $\Delta t$, l’équation discrétisée en temps s’écrit :
+\begin{equation}
+\rho c \, \frac{u^{n+1} - u^n}{\Delta t}
+= \lambda \, \Delta u^{n+1} + F^{n+1},
+\end{equation}
+où $u^n$ désigne l’approximation de la température à l’instant $t^n$.
+
+Le choix d’un schéma implicite présente un avantage majeur : il est inconditionnellement stable pour l’équation de la chaleur. Contrairement aux schémas explicites, il ne nécessite pas de condition restrictive sur le pas de temps pour garantir la stabilité numérique. En contrepartie, il impose la résolution d’un système linéaire à chaque pas de temps.
+
+\subsection{Résolution du système linéaire en 1D}
+
+Dans le cas unidimensionnel, la discrétisation conduit à un système linéaire tridiagonal. Ce type de système peut être résolu efficacement à l’aide d’algorithmes dédiés, tels que l’algorithme de Thomas, dont la complexité est linéaire en le nombre de points du maillage.
+
+Cette approche permet d’obtenir une solution numérique stable et précise, même pour des pas de temps relativement grands.
+
+\subsection{Extension au cas bidimensionnel}
+
+La résolution de l'équation de la chaleur en 2D par un schéma implicite standard conduirait à une matrice pentadiagonale extrêmement coûteuse à inverser ($O(N^3)$). Afin de limiter le coût de calcul, nous avons donc implémenté le schéma ADI (Alternating Direction Implicit).
+Cette méthode décompose chaque pas de temps $\Delta t$ en deux sous-étapes de $\Delta t/2$. Dans la première, seule la direction $x$ est traitée implicitement (résolution tridiagonale ligne par ligne), tandis que la direction $y$ reste explicite. Dans la seconde, les rôles sont inversés. Ce choix garantit une stabilité inconditionnelle tout en conservant une complexité algorithmique linéaire $O(N)$, identique au cas 1D.
+
+Cette stratégie rend possible la simulation de la diffusion thermique sur une plaque bidimensionnelle avec un temps de calcul raisonnable, tout en garantissant la stabilité du schéma numérique.
+
+\subsection{Paramètres numériques }
+
+Les paramètres numériques utilisés dans les simulations, tels que la taille du maillage spatial et le pas de temps, sont imposés par l’énoncé du projet. Ces paramètres sont identiques pour l’ensemble des matériaux étudiés, afin de permettre une comparaison cohérente de leurs comportements thermiques.
+
+Dans ce contexte, le recours à un schéma implicite s’avère particulièrement adapté. En effet, ce type de schéma garantit la stabilité numérique du calcul indépendamment du pas de temps imposé, ce qui permet de respecter les contraintes fixées par l’énoncé tout en assurant la robustesse des simulations.
+
+Ainsi, les choix numériques effectués ne visent pas à optimiser les performances du calcul, mais à fournir une solution stable, fiable et conforme au cadre défini par le sujet.
+
+\section{Structure logicielle}
+
+Notre projet est composé de différents fichiers, structurés de manière à séparer la logique physique, le calcul numérique et l'interface graphique.
+
+\subsection{Modélisation et calcul numérique}
+
+\begin{itemize}
+    \item \textbf{materiau.h}: définit la structure \texttt{Materiau}. Elle regroupe les propriétés intrinsèques (conductivité, masse volumique, chaleur massique) ainsi que le nom du matériau, facilitant ainsi leur passage en paramètre de différentes fonctions.
+    \item \textbf{solveur.h/.cpp}: contient l'implémentation de l'algorithme de Thomas qui optimise la résolution de systèmes tridiagonaux AX = B. 
+\end{itemize}
+
+\subsection{Interface graphique et encapsulation (sdl.h/.cpp)}
+Nous avons conçu une classe Sdl dont le rôle est d'encapsuler la complexité de la bibliothèque SDL2.
+
+\begin{itemize}
+    \item \textbf{Gestion des ressources}: le constructeur initialise la fenêtre et le renderer, tandis que le destructeur garantit la libération automatique de la mémoire.
+    \item \textbf{Affichage}: les méthodes \texttt{sim\_barre} et \texttt{sim\_plaque} permettent de traduire des vecteurs et des matrices de températures en représentations visuelles colorées.
+    \item \textbf{Contrôle de flux}: des méthodes utilitaires comme \texttt{wait} (gestion du temps) et \texttt{continuer} (détection de la fermeture de la fenêtre) évitent d'utiliser les structures de bas niveau de la SDL dans le main.
+\end{itemize}
+
+\subsection{Simulations physiques (barre.h/.cpp et plaque.h/.cpp)}
+Ces fichiers font le lien entre la physique et l'affichage:
+
+\begin{itemize}
+    \item \textbf{Cas 1D (barre)}: la fonction \texttt{resoudre\_chaleur} implémente le schéma des différences finies. À chaque pas de temps, elle utilise le solveur de Thomas, la fonction \texttt{source\_F} pour simuler les conditions thermiques, et délègue l'affichage à l'objet Sdl.
+    \item \textbf{Cas 2D (plaque)}: la fonction \texttt{resoudre\_chaleur\_plaque} étend cette logique à deux dimensions.
+\end{itemize}
+
+\subsection{Interface en ligne de commande (interface.h/.cpp)}
+Une interface en ligne de commande a été implémentée afin de permettre la sélection interactive du matériau.
+
+\subsection{Diagramme UML}
+La conception UML de notre projet est modélisée par le diagramme suivant :
+
+\begin{figure}[H]
+    \centering
+    \makebox[\textwidth][c]{%
+        \includegraphics[width=1.2\textwidth]{diag_uml.png}
+    }
+    \caption{Diagramme UML}
+\end{figure}
+
+
+
+
+
+\section{Exécution du programme}
+
+Cette section décrit le déroulement de l’exécution du programme, depuis la configuration des entrées par l’utilisateur jusqu’à l’analyse des résultats obtenus à l’issue des simulations. Elle permet d’illustrer concrètement l’utilisation du code et d’interpréter les comportements thermiques observés.
+
+\subsection{Configuration des entrées}
+Afin de simplifier les interactions avec l’utilisateur, une interface en ligne de commande a été mise en place. Lors de l’exécution du programme, l’utilisateur est invité à sélectionner uniquement le matériau étudié parmi les choix proposés :
+\begin{itemize}
+    \item 1 pour le cuivre ;
+    \item 2 pour le fer ;
+    \item 3 pour le verre ;
+    \item 4 pour le polystyrène.
+\end{itemize}
+
+Une fois le matériau sélectionné, le programme lance automatiquement deux simulations successives : la diffusion thermique dans une barre unidimensionnelle (1D), puis dans une plaque bidimensionnelle (2D). Cette approche permet de comparer l’influence de la géométrie sur la propagation de la chaleur pour un même matériau, sans intervention supplémentaire de l’utilisateur.
+
+La compilation du programme s’effectue à l’aide de la commande suivante :
+\begin{verbatim}
+g++ -g -Wall -Wextra -o projet *.cpp `pkg-config --cflags --libs sdl2`
+\end{verbatim}
+L'exécution se fait ensuite avec la commande :
+\begin{verbatim}
+    ./projet
+\end{verbatim}
+Les paramètres thermiques associés au matériau choisi (conductivité thermique, masse volumique et capacité thermique massique) sont alors automatiquement chargés. Les paramètres numériques, tels que le pas de temps, la durée de simulation et la taille du maillage spatial, sont imposés par l’énoncé et maintenus identiques pour toutes les simulations. Ce choix garantit une comparaison cohérente et objective des comportements thermiques des différents matériaux.
+
+
+\subsection{Résultats de l’exécution}
+
+
+\subsubsection{Cas de la barre unidimensionnelle}
+
+Dans le cas de la barre unidimensionnelle, l’exécution du programme permet de visualiser l’évolution temporelle de la température le long du support. La diffusion thermique est représentée graphiquement par un code couleur, allant du bleu pour les températures les plus basses au rouge pour les températures les plus élevées.
+
+Pour les matériaux conducteurs tels que le cuivre et le fer, les zones de chaleur s’étendent rapidement le long de la barre. La température tend à s’homogénéiser au cours du temps, ce qui traduit une diffusion thermique efficace.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{barre.png}
+    \caption{Barre de Cuivre}
+\end{figure}
+
+À l’inverse, pour les matériaux isolants comme le verre et le polystyrène, les zones chauffées restent plus localisées et les gradients thermiques persistent sur des durées plus longues.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{poly.png}
+    \caption{Barre de Polystyrène}
+\end{figure}
+\subsubsection{Cas de la plaque bidimensionnelle}
+Dans le cas de la plaque bidimensionnelle, l'exécution du programme permet d'observer la diffusion de la chaleur sur toute la surface du domaine [0,L]². La représentation graphique repose sur le même code couleur, où les nuances évoluent du bleu (froid) au rouge (chaud).
+L'extension au cas 2D confirme les observations faites dans le cas 1D, tout en mettant en évidence d'autres phénomènes:
+
+\begin{itemize}
+\item \textbf{Géométrie de propagation} : contrairement au cas 1D où le flux est unidirectionnel, on observe ici une propagation radiale. Pour le cuivre et le fer, la tache de chaleur s'étend rapidement sous forme de cercles concentriques, ce qu'on peut observer lorsque l'on attribue à la simulation une durée supérieure à 16 s.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Capture d'écran 2026-01-04 175016.png}
+    \caption{Plaque de Cuivre}
+\end{figure}
+\item \textbf{Confinement} : pour le polystyrène et le verre, la chaleur reste emprisonnée autour de la zone source, ce qui crée des zones très chaudes juste à côté de zones très froides. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{p_poly.png}
+    \caption{Plaque de Polystyrène}
+\end{figure}
+\end{itemize}
+
+\subsection{Interprétation physique}
+
+Les différences observées lors de l’exécution des simulations s’expliquent principalement par les propriétés thermiques des matériaux. En particulier, la diffusivité thermique
+\[
+\alpha = \frac{\lambda}{\rho c}
+\]
+conditionne la vitesse de propagation de la chaleur dans le matériau.
+
+Les matériaux tels que le cuivre et le fer, caractérisés par une diffusivité thermique élevée, favorisent une propagation rapide de la chaleur et une homogénéisation progressive de la température. À l’inverse, le verre et le polystyrène possèdent une diffusivité plus faible, ce qui limite les transferts thermiques et conduit à la persistance de zones de chaleur localisées.
+
+
+
+\section{Limites et perspectives}
+Malgré la pertinence des résultats obtenus, ce modèle numérique comporte des simplifications.
+
+\subsection{Limites du modèle}
+
+\begin{itemize}
+\item \textbf{L'isolation parfaite (conditions aux limites)}: dans notre implémentation, nous avons imposé des conditions aux limites de Dirichlet, mais en réalité il y a des pertes thermiques au niveau des bords.
+\item \textbf{Modèle 2D vs 3D}: notre simulation de la plaque suppose une épaisseur nulle, mais dans un objet réel les transferts de chaleur s'opèrent également dans la profondeur.
+\end{itemize}
+
+\subsection{Perspectives d'évolution}
+Afin d'enrichir ce projet, plusieurs pistes peuvent être envisagées :
+
+\begin{itemize}
+\item \textbf{Matériaux composites} : on pourrait considérer une barre ou une plaque constituée de plusieurs matériaux accolés, par exemple une couche de métal protégée par un isolant. Cela permettrait de simuler des cas concrets comme l'isolation des bâtiments.
+\item \textbf{Développement d'une interface graphique}: l'intégration d'une interface interactive (avec des boutons et des curseurs) permettrait de modifier les propriétés physiques en temps réel et d'observer instantanément l'impact sur la propagation de la chaleur.
+\end{itemize}
+
+\section{Conclusion}
+Ce projet nous a permis de modéliser et de simuler la propagation de la chaleur dans des matériaux aux propriétés thermiques distinctes, en passant d'un cas unidimensionnel à un cas bidimensionnel.
+
+Grâce à l'utilisation de la méthode des différences finies et du solveur de Thomas, nous avons pu résoudre l'équation de la chaleur de manière performante. L'utilisation de la bibliothèque SDL2, encapsulée dans une classe dédiée, a permis la visualisation des transferts thermiques dans différents cas.
+
+Les simulations ont mis en évidence des comportements contrastés : alors que dans les métaux comme le cuivre la chaleur se diffuse de manière homogène, dans les matériaux isolants comme le polystyrène elle reste localisée autour des zones source.
+
+En conclusion, ce travail illustre l'importance du calcul numérique dans l'étude des matériaux. Bien que le modèle comporte des simplifications, notamment sur les échanges avec le milieu extérieur, il constitue une base solide pour des simulations complexes. Une extension vers des matériaux composites et une interface graphique interactive permettrait de transformer notre projet en un véritable logiciel.
+
+
+
+
+
+
+
+\end{document}
