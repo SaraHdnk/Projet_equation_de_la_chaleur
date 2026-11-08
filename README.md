@@ -6,12 +6,6 @@ Résolution numérique de l'équation de la chaleur sur une **barre (1D)** et un
 > Réalisé par **Sara HADOUANI** et **Mariam SYLLA**
 
 
-<p align="center">
-  <img src="readme_projet_chaleur/barre_de_cuivre.png" width="45%"/>
-  <img src="readme_projet_chaleur/barre_de_polystyrène.png" width="45%"/>
-  <img src="readme_projet_chaleur/plaque_de_cuivre.png" width="45%"/>
-  <img src="readme_projet_chaleur/plaque_de_polystyrène.png" width="45%"/>
-</p>
 
 
 ---
@@ -40,7 +34,7 @@ La vitesse de propagation dépend de la **diffusivité thermique** $\alpha = \la
 - **Espace :** différences finies centrées d'ordre 2 sur un maillage uniforme
 - **Temps :** schéma d'**Euler implicite**, inconditionnellement stable
 - **1D :** système tridiagonal résolu par l'**algorithme de Thomas** en $O(N)$
-- **2D :** schéma **ADI** (*Alternating Direction Implicit*) : chaque pas $\Delta t$ est découpé en deux demi-pas, implicite en $x$ puis en $y$. On garde la stabilité sans inverser de matrice pentadiagonale coûteuse, et le coût reste linéaire.
+- **2D :** schéma **ADI** (*Alternating Direction Implicit*) : chaque pas $\Delta t$ est découpé en deux demi-pas, implicite en $x$ puis en $y$. 
 
 Les paramètres numériques (maillage, pas de temps, durée) sont imposés par l'énoncé et identiques pour tous les matériaux, pour que la comparaison soit cohérente.
 
@@ -95,6 +89,13 @@ Il lance ensuite automatiquement deux simulations à la suite : **la barre 1D**,
 |---|---|---|
 | **Barre 1D** | La chaleur se propage vite et la température s'homogénéise | Les zones chaudes restent localisées, les gradients persistent |
 | **Plaque 2D** | Propagation radiale en cercles concentriques (bien visible au-delà de 16 s de simulation) | Chaleur confinée autour de la source : zones très chaudes à côté de zones très froides |
+
+<p align="center">
+  <img src="readme_projet_chaleur/barre_de_cuivre.png" width="47%"/>
+  <img src="readme_projet_chaleur/barre_de_polystyrène.png" width="45%"/>
+  <img src="readme_projet_chaleur/plaque_de_cuivre.png" width="45%"/>
+  <img src="readme_projet_chaleur/plaque_de_polystyrène.png" width="47%"/>
+</p>
 
 ## Limites et pistes d'amélioration
 
